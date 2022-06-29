@@ -30,8 +30,8 @@ SET time_zone = "+00:00";
 CREATE TABLE `dim_estacion` (
   `ID_ESTACION` int(11) NOT NULL,
   `NOMBRE` varchar(100) DEFAULT NULL,
-  `LATITUD` varchar(100) DEFAULT NULL,
-  `ALTITUD` varchar(100) DEFAULT NULL,
+  `LATITUD` float(20) DEFAULT NULL,
+  `ALTITUD` float(20) DEFAULT NULL,
   `VIGENTE` boolean DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

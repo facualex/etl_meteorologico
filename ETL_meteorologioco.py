@@ -1,5 +1,5 @@
+from ntpath import join
 import pandas 
-import numpy
 from sqlalchemy import create_engine
 from os import path
 
@@ -19,7 +19,6 @@ class ETLMeteorologico:
     def __init__(self, base_files_csv_relative_path = default_base_files_csv_relative_path):
         self.db_connection = None
         self.base_files_csv_relative_path = base_files_csv_relative_path
-
         #self.__connect_database()
     
     def __del__(self):
@@ -48,17 +47,25 @@ class ETLMeteorologico:
         self.dataframe_precipitaciones.dropna(inplace=True)
         self.dataframe_temperaturas.dropna(inplace=True)
 
-        # Transformar formato de latitudes
+        # Limpiar campo temperatura_maxima  (se eliminan caracteres coma (,) que están en el dataset)
+        self.dataframe_temperaturas["temperatura_maxima"] = self.dataframe_temperaturas['temperatura_maxima'].apply(lambda row: row.replace(",", ""))
+
+        # Transformar columna temperatura_maxima a numérico
+        self.dataframe_temperaturas["temperatura_maxima"] = pandas.to_numeric(self.dataframe_temperaturas["temperatura_maxima"])
+
+        # Transformar formato de latitudeear
         self.dataframe_precipitaciones["latitud"] = self.dataframe_precipitaciones['latitud'].apply(lambda x: transform_coords(x))
         self.dataframe_temperaturas["latitud"] = self.dataframe_temperaturas['latitud'].apply(lambda x: transform_coords(x))
 
+        # Resetear indices de los dataframe tras las transformaciones
         self.dataframe_precipitaciones.reset_index(drop=True, inplace=True)
         self.dataframe_temperaturas.reset_index(drop=True, inplace=True)
 
     def __load(self):
-        print (self.dataframe_precipitaciones)
-        print(self.dataframe_temperaturas)
-        return
+        # Dataframe de temperatura y precipitacion juntos por campos en común
+        joined_dataframes = self.dataframe_precipitaciones.merge(self.dataframe_temperaturas, how='inner')
+        grouped_data = joined_dataframes.groupby(['estacion', 'mes', 'año']).agg({ 'temperatura_minima': ['mean', 'min', 'max'], 'temperatura_maxima': ['mean', 'min', 'max'], 'precipitacion': ['mean', 'min', 'max']})
+        print(grouped_data)
 
     def run(self):
         self.__extract()
@@ -76,6 +83,13 @@ class ETLMeteorologico:
             self.db_connection = None
             print('Error al autenticarse con la base de datos.', exception)
     
+    def __load_precipitaciones():
+        return
+
+    def __load_temperaturas():
+
+        return
+
     def __clean_station_names(self):
         # Corregir nombres de estaciones provenientes del CSV de temperaturas
         self.dataframe_temperaturas.loc[self.dataframe_temperaturas["estacion"] == "Eulogio SÃ¡nchez, Tobalaba Ad.", "estacion"] = "Eulogio Sánchez, Tobalaba Ad."
