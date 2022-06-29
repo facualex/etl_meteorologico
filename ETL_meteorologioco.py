@@ -77,13 +77,13 @@ class ETLMeteorologico:
 
         # Dataframes de temperatura y precipitacion unidos y resumidos con promedio y minmax para 'temperatura_minima', 'temperatura_maxima' y 'precipitacion'
         grouped_data = joined_dataframes.groupby(['estacion', 'mes', 'año'], as_index=False).agg({'temperatura_minima': [
-            'mean', 'min', 'max'], 'temperatura_maxima': ['mean', 'min', 'max'], 'precipitacion': ['mean', 'min', 'max']})
+            'mean', 'min', 'max'], 'temperatura_maxima': ['mean', 'min', 'max'], 'precipitacion': ['mean', 'min', 'max', 'sum']})
         self.grouped_data = grouped_data
 
     def __load(self):
-        #self.__load_regions()
-        #self.__load_stations()
-        #self.__load_periods()
+        self.__load_regions()
+        self.__load_stations()
+        self.__load_periods()
         self.__load_fact_table()
         return
 
@@ -105,29 +105,33 @@ class ETLMeteorologico:
             if (self.db_connection):
                 print('Conexión a la base de datos exitosa!')
 
+            # Cargar tablas a atributos globales
+            self.fact_table = Table('fact_temprec', MetaData(
+                bind=self.db_connection), autoload=True)
+            self.period_table = Table('dim_periodo', MetaData(
+                bind=self.db_connection), autoload=True)
+            self.station_table = Table('dim_estacion', MetaData(
+                bind=self.db_connection), autoload=True)
+            self.region_table = Table('dim_region', MetaData(
+                bind=self.db_connection), autoload=True)
+
         except Exception as exception:
             self.db_connection = None
             print('Error al autenticarse con la base de datos.', exception)
 
     def __load_regions(self):
-        region_table = Table('dim_region', MetaData(
-            bind=self.db_connection), autoload=True)
-
         unique_regions = self.joined_dataframes['region'].unique()
 
         print('Poblando dim_region...')
         for region in unique_regions:
             insert_region = (
-                insert(region_table).
+                insert(self.region_table).
                 values(NOMBRE_REGION=region)
             )
 
             self.db_connection.execute(insert_region)
 
     def __load_stations(self):
-        station_table = Table('dim_estacion', MetaData(
-            bind=self.db_connection), autoload=True)
-
         stations_to_create = []
 
         unique_stations = self.joined_dataframes['estacion'].unique()
@@ -143,7 +147,7 @@ class ETLMeteorologico:
             nombre_estacion, latitud, altitud = station
 
             insert_station = (
-                insert(station_table).
+                insert(self.station_table).
                 values(NOMBRE=nombre_estacion,
                        LATITUD=latitud, ALTITUD=altitud)
             )
@@ -151,36 +155,65 @@ class ETLMeteorologico:
             self.db_connection.execute(insert_station)
 
     def __load_periods(self):
-        period_table = Table('dim_periodo', MetaData(
-            bind=self.db_connection), autoload=True)
-
         periods_to_create = self.grouped_data[['mes', 'año']].values
 
         print('Poblando dim_periodo...')
         for month, year in periods_to_create:
             insert_period = (
-                insert(period_table).
+                insert(self.period_table).
                 values(ANNIO=year,
                        MES=month)
             )
 
             self.db_connection.execute(insert_period)
-    '''
-     def __load_fact_table(self):
-        fact_table = Table('fact_temprec', MetaData(
-            bind=self.db_connection), autoload=True)
-        
-        print('Poblando table de hechos fact_temprec...')
-        for month, year in periods_to_create:
+
+    def __load_fact_table(self):
+        station_regions_map = self.joined_dataframes.groupby(
+            ['estacion'], as_index=False).agg({'region': ['min']})
+
+        print('Poblando tabla de hechos fact_temprec...')
+        for row in self.grouped_data.values:
+            nombre_estacion, month, year, promedio_temperatura_minima, minima_temperatura_minima, maxima_temperatura_minima, promedio_temperatura_maxima, minima_temperatura_maxima, maxima_temperatura_maxima, promedio_precipitacion, minima_precipitacion, maxima_precipitacion, suma_precipitacion = row
+            region_estacion = station_regions_map.loc[station_regions_map['estacion']
+                                                      == nombre_estacion, 'region'].values[0][0]
+
+            select_station = select(self.station_table).where(
+                self.station_table.c.NOMBRE == nombre_estacion)
+            select_period = select(self.period_table).where(
+                self.period_table.c.MES == month and self.period_table.c.ANNIO == year)
+            select_region = select(self.region_table).where(
+                self.region_table.c.NOMBRE_REGION == region_estacion)
+
+            station = self.db_connection.execute(select_station).first()
+            region = self.db_connection.execute(select_region).first()
+            period = self.db_connection.execute(select_period).first()
+
+            if (not station or not region or not period):
+                continue
+
+            id_estacion = station[0]
+            id_periodo = station[0]
+            id_region = region[0]
+
             insert_period = (
-                insert(period_table).
-                values(ANNIO=year,
-                       MES=month)
-            )
+                insert(self.fact_table).
+                values(
+                    ID_PERIODO=id_periodo,
+                    ID_ESTACION=id_estacion,
+                    ID_REGION=id_region,
+                    MINIMA_TEMPERATURA_MAXIMA=minima_temperatura_maxima,
+                    MAXIMA_TEMPERATURA_MAXIMA=maxima_temperatura_maxima,
+                    MINIMA_TEMPERATURA_MINIMA=minima_temperatura_minima,
+                    MAXIMA_TEMPERATURA_MINIMA=maxima_temperatura_minima,
+                    PROMEDIO_TEMPERATURA_MINIMA=promedio_temperatura_minima,
+                    PROMEDIO_TEMPERATURA_MAXIMA=promedio_temperatura_maxima,
+                    PROMEDIO_PRECIPITACION=promedio_precipitacion,
+                    PRECIPITACION_MINIMA=minima_precipitacion,
+                    PRECIPITACION_MAXIMA=maxima_precipitacion,
+                    SUMA_PRECIPITACION=suma_precipitacion)
+                )
 
             self.db_connection.execute(insert_period)
-   
-    '''
 
     def __clean_station_names(self):
         # Corregir nombres de estaciones provenientes del CSV de temperaturas
