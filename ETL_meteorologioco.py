@@ -7,6 +7,14 @@ default_base_files_csv_relative_path = ['./data/precipitaciones.csv', './data/te
 
 from database_config import DATABASE_NAME, DATABASE_HOST, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_USER
 
+def transform_coords(coordinates_string):
+    direction = {'N':1, 'S':-1, 'E': 1, 'W':-1}
+    new = coordinates_string.replace(u'°',' ').replace('\'',' ').replace('"',' ')
+    new = new.split()
+    new_dir = new.pop()
+    new.extend([0,0,0])
+    return (int(new[0])+int(new[1])/60.0+int(new[2])/3600.0) * direction[new_dir]
+
 class ETLMeteorologico: 
     def __init__(self, base_files_csv_relative_path = default_base_files_csv_relative_path):
         self.db_connection = None
@@ -36,9 +44,19 @@ class ETLMeteorologico:
         # Agregar campo "region" al set de datos
         self.__add_regions()
 
+        # Eliminar registros que tengan campos en "NaN"
+        self.dataframe_precipitaciones.dropna(inplace=True)
+        self.dataframe_temperaturas.dropna(inplace=True)
+
+        # Transformar formato de latitudes
+        self.dataframe_precipitaciones["latitud"] = self.dataframe_precipitaciones['latitud'].apply(lambda x: transform_coords(x))
+        self.dataframe_temperaturas["latitud"] = self.dataframe_temperaturas['latitud'].apply(lambda x: transform_coords(x))
+
+        self.dataframe_precipitaciones.reset_index(drop=True, inplace=True)
+        self.dataframe_temperaturas.reset_index(drop=True, inplace=True)
 
     def __load(self):
-        print(self.dataframe_precipitaciones)
+        print (self.dataframe_precipitaciones)
         print(self.dataframe_temperaturas)
         return
 
