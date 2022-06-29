@@ -70,7 +70,7 @@ class ETLMeteorologico:
         self.grouped_data = grouped_data
 
     def __load(self):
-        #self.__load_regions()
+        self.__load_regions()
         self.__load_stations()
         self.__load_periods()
         self.__load_precipitaciones()
