@@ -45,7 +45,6 @@ CREATE TABLE `dim_periodo` (
   `ID_PERIODO` int(11) NOT NULL,
   `ANNIO` int(4) DEFAULT NULL,
   `MES` int(2) DEFAULT NULL,
-  `DIA` int(2) DEFAULT NULL,
   `VIGENTE` boolean DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

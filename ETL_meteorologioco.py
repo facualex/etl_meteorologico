@@ -1,7 +1,7 @@
-from ntpath import join
 import pandas 
-from sqlalchemy import create_engine
+from sqlalchemy import MetaData, Table, create_engine, insert, select
 from os import path
+
 
 default_base_files_csv_relative_path = ['./data/precipitaciones.csv', './data/temperaturas.csv'] 
 
@@ -70,7 +70,7 @@ class ETLMeteorologico:
         self.grouped_data = grouped_data
 
     def __load(self):
-        self.__load_regions()
+        #self.__load_regions()
         self.__load_stations()
         self.__load_periods()
         self.__load_precipitaciones()
@@ -95,19 +95,42 @@ class ETLMeteorologico:
             print('Error al autenticarse con la base de datos.', exception)
     
     def __load_regions(self):
+        region_table = Table('dim_region', MetaData(bind=self.db_connection), autoload=True)
+
         unique_regions = self.joined_dataframes['region'].unique()
-        print(unique_regions)
+
+        print('Poblando dim_region...')
+        for region in unique_regions:
+            insert_region = (
+                insert(region_table).
+                values(NOMBRE_REGION = region)
+            )
+
+            self.db_connection.execute(insert_region)
+
 
     def __load_stations(self):
+        station_table = Table('dim_estacion', MetaData(bind=self.db_connection), autoload=True)
+
         stations_to_create = []
 
         unique_stations = self.joined_dataframes['estacion'].unique()
 
         for station in unique_stations:
-            out = self.joined_dataframes.loc[self.joined_dataframes['estacion'] == station, ['estacion', 'latitud', 'altitud', 'region']]
+            out = self.joined_dataframes.loc[self.joined_dataframes['estacion'] == station, ['estacion', 'latitud', 'altitud']]
             stations_to_create.append(out.drop_duplicates(['estacion']).values[0])
-        
-        print(stations_to_create)
+
+        print('Poblando dim_estacion...')
+        for station in stations_to_create:
+            nombre_estacion, latitud, altitud = station
+
+            insert_station = (
+                insert(station_table).
+                values(NOMBRE = nombre_estacion, LATITUD = latitud, ALTITUD = altitud)
+            )
+
+            self.db_connection.execute(insert_station)
+
 
     def __load_periods(self):
         periods_to_create = self.grouped_data[['mes', 'año']].values
@@ -288,3 +311,22 @@ class ETLMeteorologico:
             elif (estacion == "Carriel Sur, Concepción."):
                 self.dataframe_temperaturas.loc[self.dataframe_temperaturas["estacion"] == estacion, "region"] = "Bío Bío" 
             
+'''
+SELECT EXAMPLE WITH SQLALCHEMY
+            select_author = select(author_table).where(author_table.c.nombre_autor == row['author'])
+            select_talk = select(talks_table).where(talks_table.c.nombre_charla == row['title'])
+            select_period = select(period_table).where(period_table.c.fecha == row['date'])
+
+            author = self.db_connection.execute(select_author).first()
+            talk = self.db_connection.execute(select_talk).first()
+            period = self.db_connection.execute(select_period).first()
+
+            if(author is not None and talk is not None and period is not None):
+                insert_fact = (
+                    insert(fact_table).
+                    values(id_autor=author[0], id_charla=talk[0], id_periodo=period[0], total_visitas_charla=row['views'], total_likes_charla=row['likes'], ratio_likes_visitas_charla=row['ratio_likes_visitas_charla'])
+                )
+
+                self.db_connection.execute(insert_fact)
+
+'''
