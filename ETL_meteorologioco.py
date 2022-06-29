@@ -36,18 +36,11 @@ class ETLMeteorologico:
         # Agregar campo "region" al set de datos
         self.__add_regions()
 
+
     def __load(self):
-        precipitaciones_unique_estaciones = self.dataframe_precipitaciones['estacion'].unique()
-        temperaturas_unique_estaciones = self.dataframe_temperaturas['estacion'].unique()
-        common = list(set(precipitaciones_unique_estaciones).intersection(temperaturas_unique_estaciones))
-
-        print(len(precipitaciones_unique_estaciones))
-        print(len(temperaturas_unique_estaciones))
-        print(len(common))
-
-        restantes_1 = list(set(temperaturas_unique_estaciones) - set(common))
-        restantes_2 = list(set(precipitaciones_unique_estaciones) - set(common))
-        print(list(set(restantes_2) - set(restantes_1)))
+        print(self.dataframe_precipitaciones)
+        print(self.dataframe_temperaturas)
+        return
 
     def run(self):
         self.__extract()
@@ -98,72 +91,68 @@ class ETLMeteorologico:
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " ChillÃ¡n Ad.", "estacion"] = "General Bernardo O'Higgins, Chillán Ad."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " ConcepciÃ³n Ap.", "estacion"] = "Carriel Sur, Concepción Ap."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " ConcepciÃ³n.", "estacion"] = "Carriel Sur, Concepción."
-        self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Coyhaique Ad.", "estacion"] = "Coyahique Ad."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " CuricÃ³ Ad.", "estacion"] = "General Freire, Curicó Ad."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " EstaciÃ³n MeteorolÃ³gica.", "estacion"] = "Juan Fernández, Estación Meteorológica."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " La Serena Ad.", "estacion"] = "La Florida, La Serena Ad."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Los Angeles Ad.", "estacion"] = "María Dolores, Los Angeles Ad."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Porvenir Ad.", "estacion"] = "Fuentes Martínez, Porvenir Ad."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Pto Williams Ad.", "estacion"] = "Guardiamarina Zañartu, Pto Williams Ad."
-        self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Puerto Natales Ad.", "estacion"] = "Puerto Natales Ad."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Punta Arenas Ap.", "estacion"] = "Carlos Ibañez, Punta Arenas Ap."
-        self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Santiago", "estacion"] = "Santiago"
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Temuco Ad.", "estacion"] = "Temuco Ad."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Tobalaba Ad.", "estacion"] = "Eulogio Sánchez, Tobalaba Ad."
-        self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Valdivia Ad.", "estacion"] = "Valdivia Ad."
-        self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == "Puerto Natales Ad.", "estacion"] = "Teniente Gallardo, Puerto Natales Ad."
+        self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Puerto Natales Ad.", "estacion"] = "Teniente Gallardo, Puerto Natales Ad."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == "Arica Ap.", "estacion"] = "Chacalluta, Arica Ap."
-        self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == "Valdivia Ad.", "estacion"] = "Pichoy, Valdivia Ad."
-        self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == "Santiago", "estacion"] = "Pudahuel Santiago"
+        self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Valdivia Ad.", "estacion"] = "Pichoy, Valdivia Ad."
+        self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == " Santiago", "estacion"] = "Pudahuel Santiago"
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == "Calama Ad.", "estacion"] = "El Loa, Calama Ad."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == "Temuco Ad.", "estacion"] = "Maquehue, Temuco Ad."
         self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == "Coyahique Ad.", "estacion"] = "Teniente Vidal, Coyhaique Ad."
 
     def __add_regions(self):
         for estacion in self.dataframe_precipitaciones["estacion"].unique():
-            if (estacion == 'Osorno Ad.'):
+            if (estacion == 'Cañal Bajo, Osorno Ad.'):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Los Lagos"
             elif (estacion == "Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Metropolitana"    
-            elif (estacion == "Antártica."):
+            elif (estacion == "C.M.A. Eduardo Frei Montalva, Antártica."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Antártica Chilena"    
-            elif (estacion == "Arica Ap."):
+            elif (estacion == "Chacalluta, Arica Ap."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Arica y Parinacota"    
-            elif (estacion == "Calama Ad."):
+            elif (estacion == "El Loa, Calama Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Antofagasta"    
-            elif (estacion == "Caldera Ad."):
+            elif (estacion == "Desierto de Atacama, Caldera Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Atacama"    
-            elif (estacion == "Chillán Ad."):
+            elif (estacion == "General Bernardo O'Higgins, Chillán Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Ñuble"    
-            elif (estacion == "Concepción Ap."):
+            elif (estacion == "Carriel Sur, Concepción Ap."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Bío Bío" 
-            elif (estacion == "Concepción."):
+            elif (estacion == "Carriel Sur, Concepción."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Bío Bío" 
-            elif (estacion == "Coyahique Ad."):
+            elif (estacion == "Teniente Vidal, Coyhaique Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Aysén" 
-            elif (estacion == "Curicó Ad."):
+            elif (estacion == "General Freire, Curicó Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Maule" 
-            elif (estacion == "Estación Meteorológica."):
+            elif (estacion == "Juan Fernández, Estación Meteorológica."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Valparaíso" 
-            elif (estacion == "La Serena Ad."):
+            elif (estacion == "La Florida, La Serena Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Coquimbo" 
-            elif (estacion == "Los Angeles Ad."):
+            elif (estacion == "María Dolores, Los Angeles Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Bío Bío"
-            elif (estacion == "Porvenir Ad."):
+            elif (estacion == "Fuentes Martínez, Porvenir Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Magallanes y Antártica Chilena"
-            elif (estacion == "Pto Williams Ad."):
+            elif (estacion == "Guardiamarina Zañartu, Pto Williams Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Magallanes"
-            elif (estacion == "Puerto Natales Ad."):
+            elif (estacion == "Teniente Gallardo, Puerto Natales Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Magallanes y Antártica Chilena"     
-            elif (estacion == "Punta Arenas Ap."):
+            elif (estacion == "Carlos Ibañez, Punta Arenas Ap."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Magallanes y Antártica Chilena"     
-            elif (estacion == "Santiago"):
+            elif (estacion == "Pudahuel Santiago"):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Metropolitana"     
-            elif (estacion == "Temuco Ad."):
+            elif (estacion == "Maquehue, Temuco Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Araucanía"     
-            elif (estacion == "Tobalaba Ad."):
+            elif (estacion == "Eulogio Sánchez, Tobalaba Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Metropolitana"     
-            elif (estacion == "Valdivia Ad."):
+            elif (estacion == "Pichoy, Valdivia Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"] == estacion, "region"] = "Los Ríos"
 
         for estacion in self.dataframe_temperaturas["estacion"].unique():
