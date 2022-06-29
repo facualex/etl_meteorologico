@@ -482,24 +482,3 @@ class ETLMeteorologico:
             elif (estacion == "Carriel Sur, Concepción."):
                 self.dataframe_temperaturas.loc[self.dataframe_temperaturas["estacion"]
                                                 == estacion, "region"] = "Bío Bío"
-
-
-'''
-SELECT EXAMPLE WITH SQLALCHEMY
-            select_author = select(author_table).where(author_table.c.nombre_autor == row['author'])
-            select_talk = select(talks_table).where(talks_table.c.nombre_charla == row['title'])
-            select_period = select(period_table).where(period_table.c.fecha == row['date'])
-
-            author = self.db_connection.execute(select_author).first()
-            talk = self.db_connection.execute(select_talk).first()
-            period = self.db_connection.execute(select_period).first()
-
-            if(author is not None and talk is not None and period is not None):
-                insert_fact = (
-                    insert(fact_table).
-                    values(id_autor=author[0], id_charla=talk[0], id_periodo=period[0], total_visitas_charla=row['views'], total_likes_charla=row['likes'], ratio_likes_visitas_charla=row['ratio_likes_visitas_charla'])
-                )
-
-                self.db_connection.execute(insert_fact)
-
-'''
