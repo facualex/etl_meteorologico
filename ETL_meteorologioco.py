@@ -19,7 +19,7 @@ class ETLMeteorologico:
     def __init__(self, base_files_csv_relative_path = default_base_files_csv_relative_path):
         self.db_connection = None
         self.base_files_csv_relative_path = base_files_csv_relative_path
-        #self.__connect_database()
+        self.__connect_database()
     
     def __del__(self):
         if(self.db_connection):
@@ -61,11 +61,21 @@ class ETLMeteorologico:
         self.dataframe_precipitaciones.reset_index(drop=True, inplace=True)
         self.dataframe_temperaturas.reset_index(drop=True, inplace=True)
 
-    def __load(self):
         # Dataframe de temperatura y precipitacion juntos por campos en común
         joined_dataframes = self.dataframe_precipitaciones.merge(self.dataframe_temperaturas, how='inner')
-        grouped_data = joined_dataframes.groupby(['estacion', 'mes', 'año']).agg({ 'temperatura_minima': ['mean', 'min', 'max'], 'temperatura_maxima': ['mean', 'min', 'max'], 'precipitacion': ['mean', 'min', 'max']})
-        print(grouped_data)
+        self.joined_dataframes = joined_dataframes
+
+        # Dataframes de temperatura y precipitacion unidos y resumidos con promedio y minmax para 'temperatura_minima', 'temperatura_maxima' y 'precipitacion'
+        grouped_data = joined_dataframes.groupby(['estacion', 'mes', 'año'], as_index=False).agg({ 'temperatura_minima': ['mean', 'min', 'max'], 'temperatura_maxima': ['mean', 'min', 'max'], 'precipitacion': ['mean', 'min', 'max']})
+        self.grouped_data = grouped_data
+
+    def __load(self):
+        self.__load_regions()
+        self.__load_stations()
+        self.__load_periods()
+        self.__load_precipitaciones()
+        self.__load_temperaturas()
+        return
 
     def run(self):
         self.__extract()
@@ -79,15 +89,36 @@ class ETLMeteorologico:
 
             if (self.db_connection):
                 print('Conexión a la base de datos exitosa!')
+
         except Exception as exception:
             self.db_connection = None
             print('Error al autenticarse con la base de datos.', exception)
     
-    def __load_precipitaciones():
+    def __load_regions(self):
+        unique_regions = self.joined_dataframes['region'].unique()
+        print(unique_regions)
+
+    def __load_stations(self):
+        stations_to_create = []
+
+        unique_stations = self.joined_dataframes['estacion'].unique()
+
+        for station in unique_stations:
+            out = self.joined_dataframes.loc[self.joined_dataframes['estacion'] == station, ['estacion', 'latitud', 'altitud', 'region']]
+            stations_to_create.append(out.drop_duplicates(['estacion']).values[0])
+        
+        print(stations_to_create)
+
+    def __load_periods(self):
+        periods_to_create = self.grouped_data[['mes', 'año']].values
+
+#        for month, year in periods_to_create:
+#            print(month, year)
+
+    def __load_precipitaciones(self):
         return
 
-    def __load_temperaturas():
-
+    def __load_temperaturas(self):
         return
 
     def __clean_station_names(self):
