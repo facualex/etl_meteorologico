@@ -156,16 +156,23 @@ class ETLMeteorologico:
 
     def __load_periods(self):
         periods_to_create = self.grouped_data[['mes', 'año']].values
-
         print('Poblando dim_periodo...')
-        for month, year in periods_to_create:
-            insert_period = (
-                insert(self.period_table).
-                values(ANNIO=year,
-                       MES=month)
-            )
 
-            self.db_connection.execute(insert_period)
+        for month, year in periods_to_create:
+            select_period = select(self.period_table).where(
+                self.period_table.c.MES == month, self.period_table.c.ANNIO == year)
+
+            period = self.db_connection.execute(select_period).first()
+
+
+            if (not period):
+                insert_period = (
+                    insert(self.period_table).
+                    values(ANNIO=year,
+                        MES=month)
+                )
+
+                self.db_connection.execute(insert_period)
 
     def __load_fact_table(self):
         station_regions_map = self.joined_dataframes.groupby(
@@ -180,7 +187,7 @@ class ETLMeteorologico:
             select_station = select(self.station_table).where(
                 self.station_table.c.NOMBRE == nombre_estacion)
             select_period = select(self.period_table).where(
-                self.period_table.c.MES == month and self.period_table.c.ANNIO == year)
+                self.period_table.c.MES == month, self.period_table.c.ANNIO == year)
             select_region = select(self.region_table).where(
                 self.region_table.c.NOMBRE_REGION == region_estacion)
 
