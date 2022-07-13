@@ -320,7 +320,7 @@ class ETLMeteorologico:
                                                    == estacion, "region"] = "Metropolitana"
             elif (estacion == "C.M.A. Eduardo Frei Montalva, Antártica."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"]
-                                                   == estacion, "region"] = "Antártica Chilena"
+                                                   == estacion, "region"] = "Magallanes y Antártica Chilena"
             elif (estacion == "Chacalluta, Arica Ap."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"]
                                                    == estacion, "region"] = "Arica y Parinacota"
@@ -359,7 +359,7 @@ class ETLMeteorologico:
                                                    == estacion, "region"] = "Magallanes y Antártica Chilena"
             elif (estacion == "Guardiamarina Zañartu, Pto Williams Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"]
-                                                   == estacion, "region"] = "Magallanes"
+                                                   == estacion, "region"] = "Magallanes y Antártica Chilena"
             elif (estacion == "Teniente Gallardo, Puerto Natales Ad."):
                 self.dataframe_precipitaciones.loc[self.dataframe_precipitaciones["estacion"]
                                                    == estacion, "region"] = "Magallanes y Antártica Chilena"
@@ -475,10 +475,10 @@ class ETLMeteorologico:
                                                 == estacion, "region"] = "Magallanes y Antártica Chilena"
             elif (estacion == "Guardiamarina Zañartu, Pto Williams Ad."):
                 self.dataframe_temperaturas.loc[self.dataframe_temperaturas["estacion"]
-                                                == estacion, "region"] = "Magallanes"
+                                                == estacion, "region"] = "Magallanes y Antártica Chilena"
             elif (estacion == "C.M.A. Eduardo Frei Montalva, Antártica."):
                 self.dataframe_temperaturas.loc[self.dataframe_temperaturas["estacion"]
-                                                == estacion, "region"] = "Antártica Chilena"
+                                                == estacion, "region"] = "Magallanes y Antártica Chilena"
             elif (estacion == "Carriel Sur, Concepción."):
                 self.dataframe_temperaturas.loc[self.dataframe_temperaturas["estacion"]
                                                 == estacion, "region"] = "Bío Bío"
