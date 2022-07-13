@@ -192,7 +192,7 @@ class ETLMeteorologico:
                 continue
 
             id_estacion = station[0]
-            id_periodo = station[0]
+            id_periodo = period[0]
             id_region = region[0]
 
             insert_period = (
